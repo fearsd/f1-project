@@ -70,7 +70,6 @@ services:
       - "9090:9090" # Prometheus web UI
     volumes:
       - ./docker-config/prometheus.yml:/etc/prometheus/prometheus.yml # Конфигурационный файл
-      - ./docker-config/alert_rules.yml:/etc/prometheus/alert_rules.yml # Файл с алертами
     restart: unless-stopped
 
 
