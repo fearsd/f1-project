@@ -1,0 +1,23 @@
+global:
+  # интервал забора метрик
+  scrape_interval: 15s
+  # интервал вычисления выражений для алертов
+  evaluation_interval: 15s
+scrape_configs:
+  - job_name: 'stats-service'
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ['stats-service:8000']
+  - job_name: 'notifications-service'
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: [ 'notifications-service:8000' ]
+  - job_name: 'achievements-service'
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: [ 'achievements-service:8000' ]
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15692']
+# rule_files:
+#   - "alert_rules.yml" # путь до файла с алертами

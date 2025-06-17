@@ -1,0 +1,91 @@
+services:
+  stats-service:
+    container_name: stats-service
+    build:
+      context: ./stats-service
+    volumes:
+      - ./stats-service/app:/code/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:password@postgres:5432/f1
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+
+  notifications-service:
+    container_name: notifications-service
+    build: ./notifications-service
+    volumes:
+      - ./notifications-service/app:/code/app
+    ports:
+      - "8001:8000"
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+  
+  achievements-service:
+    container_name: achievements-service
+    build: ./achievements-service
+    volumes:
+      - ./achievements-service/app:/code/app
+    ports:
+      - "8002:8000"
+    depends_on:
+      - rabbitmq
+      - postgres
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - DATABASE_URL=postgresql+asyncpg://postgres:password@postgres:5432/f1
+  postgres:
+    container_name: f1-postgres
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: f1
+    ports:
+      - "5432:5432"
+
+  redis:
+    container_name: f1-redis
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  rabbitmq:
+    container_name: f1-rabbitmq
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  
+  prometheus:
+    image: prom/prometheus:v2.44.0
+    container_name: f1-prometheus
+    ports:
+      - "9090:9090" # Prometheus web UI
+    volumes:
+      - ./docker-config/prometheus.yml:/etc/prometheus/prometheus.yml # Конфигурационный файл
+      - ./docker-config/alert_rules.yml:/etc/prometheus/alert_rules.yml # Файл с алертами
+    restart: unless-stopped
+
+
+  grafana:
+    image: grafana/grafana
+    container_name: f1-grafana
+    ports:
+      - "3000:3000" # Grafana web UI
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin # Пароль администратора
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus # Дожидается прометея
+    restart: unless-stopped
+
+volumes:
+  grafana-data:
