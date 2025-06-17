@@ -34,6 +34,8 @@ async def driver_joins_team(event: DriverJoinedTeamEvent, session: AsyncSession 
     await session.commit()
 
     await dispatch_event("DriverJoinedTeam", event.model_dump(), session)
+    await publish_event("notifications.DriverJoinedTeam", event_dict)
+
     return {"status": "driver joined team"}
 
 @router.post("/leave")
@@ -45,4 +47,5 @@ async def driver_leaves_team(event: DriverLeftTeamEvent, session: AsyncSession =
     await session.commit()
 
     await dispatch_event("DriverLeftTeam", event.model_dump(), session)
+    await publish_event("notifications.DriverLeftTeam", event_dict)
     return {"status": "driver left team"}

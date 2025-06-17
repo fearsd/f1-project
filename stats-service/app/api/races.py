@@ -17,6 +17,7 @@ async def schedule_race(event: RaceScheduledEvent, session: AsyncSession = Depen
     await session.commit()
 
     await dispatch_event("RaceScheduled", event.model_dump(), session)
+    await publish_event("race.RaceScheduled", event_dict)
     return {"status": "race scheduled"}
 
 @router.post("/finish")
